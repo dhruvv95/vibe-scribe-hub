@@ -25,20 +25,44 @@ export const useDraft = () => {
   return context;
 };
 
-const mockAIResponse: AIResponse = {
-  postIdeas: [
-    "How AI is transforming the way social media teams work",
-    "5 time-saving automation tools every social media manager needs",
-    "The future of content creation: Human creativity meets AI assistance",
-    "Behind the scenes: How our team leverages AI for better engagement",
-    "Case study: How AI-powered content increased our engagement by 45%"
-  ],
-  captions: {
-    linkedin: "AI isn't replacing social media managers—it's supercharging them. Here's how our team has transformed our workflow with intelligent tools while keeping the human touch that our audience values. #AIInMarketing #SocialMediaStrategy",
-    facebook: "Working smarter, not harder! 💪 Our social media team has been testing new AI tools to help with content creation, and we've seen some incredible results! Have you tried incorporating AI into your marketing strategy? #MarketingTips",
-    twitter: "AI + human creativity = social media magic ✨ We've cut our content planning time in half while boosting engagement. Here's our approach:"
-  },
-  hashtags: ["#AIMarketing", "#ContentStrategy", "#SocialMediaTips", "#DigitalMarketing", "#MarketingAutomation"]
+// Function to generate dynamic content based on user input
+const generateDynamicContent = (prompt: AIPrompt): AIResponse => {
+  const { industry, tone, audience } = prompt;
+  
+  // Generate post ideas based on industry and tone
+  let postIdeas = [
+    `How ${industry} is transforming with the latest ${tone.toLowerCase()} approaches`,
+    `5 ways ${industry} professionals can leverage ${tone.toLowerCase()} communication`,
+    `The future of ${industry}: Connecting with ${audience ? audience.split(" ")[0] : "your"} audience through ${tone.toLowerCase()} content`,
+    `Behind the scenes: How our ${industry} team creates ${tone.toLowerCase()} content that resonates`,
+    `Case study: How a ${tone.toLowerCase()} approach in ${industry} increased engagement by 45%`
+  ];
+  
+  // Generate captions based on selected parameters
+  const linkedinCaption = `${industry} isn't standing still—it's evolving rapidly. Here's how our team has transformed our workflow with ${tone.toLowerCase()} messaging that ${audience ? audience : "our audience"} truly values. #${industry.replace(/\s+/g, '')}Trends #SocialMediaStrategy`;
+  
+  const facebookCaption = `Working smarter in ${industry}! 💪 Our team has been using ${tone.toLowerCase()} messaging to connect with ${audience ? audience : "our audience"}, and we've seen some incredible results! Have you tried this approach? #${industry.replace(/\s+/g, '')}Tips`;
+  
+  const twitterCaption = `${industry} + ${tone.toLowerCase()} content = engagement magic ✨ We've boosted our connection with ${audience ? audience : "our audience"}. Here's our approach:`;
+  
+  // Generate relevant hashtags
+  const hashtags = [
+    `#${industry.replace(/\s+/g, '')}`,
+    `#${tone.replace(/\s+/g, '')}Content`,
+    `#SocialMediaTips`,
+    `#${industry.replace(/\s+/g, '')}Marketing`,
+    `#ContentStrategy`
+  ];
+  
+  return {
+    postIdeas,
+    captions: {
+      linkedin: linkedinCaption,
+      facebook: facebookCaption,
+      twitter: twitterCaption
+    },
+    hashtags
+  };
 };
 
 export const DraftProvider: React.FC<{ children: React.ReactNode }> = ({ 
@@ -75,18 +99,20 @@ export const DraftProvider: React.FC<{ children: React.ReactNode }> = ({
   const generateContent = async (prompt: AIPrompt): Promise<AIResponse> => {
     setIsLoading(true);
     try {
-      // In a real app, we would call the OpenAI API here
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      // Simulate API delay
+      await new Promise((resolve) => setTimeout(resolve, 1500));
       
-      // Using mock data for now
-      setAIResponse(mockAIResponse);
+      // Generate dynamic content based on user input
+      const generatedResponse = generateDynamicContent(prompt);
+      
+      setAIResponse(generatedResponse);
       
       toast({
         title: "Content generated",
         description: "AI suggestions are ready for review",
       });
       
-      return mockAIResponse;
+      return generatedResponse;
     } catch (error) {
       toast({
         title: "Generation failed",
