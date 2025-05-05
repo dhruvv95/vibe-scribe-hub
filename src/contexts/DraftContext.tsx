@@ -3,6 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { Draft, AIPrompt, AIResponse } from "@/types";
 import { useAuth } from "./AuthContext";
 import { useToast } from "@/components/ui/use-toast";
+import { getOpenAIResponse } from "@/services/openaiService";
 
 type DraftContextType = {
   drafts: Draft[];
@@ -25,7 +26,7 @@ export const useDraft = () => {
   return context;
 };
 
-// Function to generate dynamic content based on user input
+// Fallback function to generate content if OpenAI API fails
 const generateDynamicContent = (prompt: AIPrompt): AIResponse => {
   const { industry, tone, audience } = prompt;
   
@@ -99,11 +100,22 @@ export const DraftProvider: React.FC<{ children: React.ReactNode }> = ({
   const generateContent = async (prompt: AIPrompt): Promise<AIResponse> => {
     setIsLoading(true);
     try {
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      let generatedResponse: AIResponse;
       
-      // Generate dynamic content based on user input
-      const generatedResponse = generateDynamicContent(prompt);
+      try {
+        // Try to get response from OpenAI
+        generatedResponse = await getOpenAIResponse(prompt);
+      } catch (openAIError) {
+        console.error("OpenAI API error:", openAIError);
+        toast({
+          title: "OpenAI API Error",
+          description: "Using fallback content generation. Please check your API key.",
+          variant: "destructive",
+        });
+        
+        // Use fallback if OpenAI fails
+        generatedResponse = generateDynamicContent(prompt);
+      }
       
       setAIResponse(generatedResponse);
       

@@ -6,6 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -53,8 +55,11 @@ const CreateContent: React.FC = () => {
   const [audience, setAudience] = useState(user?.preferences.defaultAudience || "");
   const [selectedPostIndex, setSelectedPostIndex] = useState<number | null>(null);
   const [selectedPlatform, setSelectedPlatform] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   
   const handleGenerate = async () => {
+    setError(null); // Reset error state before each attempt
+    
     const prompt: AIPrompt = {
       industry,
       tone,
@@ -68,6 +73,9 @@ const CreateContent: React.FC = () => {
       setSelectedPlatform(null);
     } catch (error) {
       console.error("Failed to generate content:", error);
+      setError(
+        "Unable to generate content. Please check your API key configuration or try again later."
+      );
     }
   };
   
@@ -90,6 +98,7 @@ const CreateContent: React.FC = () => {
         navigate(`/drafts/${draft.id}`);
       } catch (error) {
         console.error("Failed to save draft:", error);
+        setError("Failed to save draft. Please try again.");
       }
     }
   };
@@ -106,6 +115,26 @@ const CreateContent: React.FC = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Show API key error message if applicable */}
+          {error && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          
+          {!import.meta.env.VITE_OPENAI_API_KEY && (
+            <Alert variant="warning" className="mb-4 bg-amber-50 border-amber-300">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>API Key Missing</AlertTitle>
+              <AlertDescription>
+                OpenAI API key not found. Please add VITE_OPENAI_API_KEY to your environment variables.
+                Using fallback content generation until configured.
+              </AlertDescription>
+            </Alert>
+          )}
+          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label htmlFor="industry">Industry</Label>
